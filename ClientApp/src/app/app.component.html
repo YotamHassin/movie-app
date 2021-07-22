@@ -1,0 +1,47 @@
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced. * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * Delete the template below * * * * * * * * * * -->
+<!-- * * * * * * * to get started with your project! * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+
+<!-- Toolbar -->
+<div class="toolbar" role="banner">
+
+  <!-- <span>Welcome to</span> -->
+  <span class="toolbar-title">{{ title }}</span>
+
+  <!-- <ul class="nav-tabs">
+    <li class="nav-tab"
+    *ngFor="let link of routes(); let linkIndex = index">
+      <a [routerLink]="link.fragment">{{ link.title }}</a>
+    </li>
+  </ul> -->
+
+  <div class="spacer"></div>
+
+</div>
+
+<!-- content -->
+<div class="container-fluid content" role="main">
+  <div *ngIf="hasUser" class="category-item card-body">
+    <span>Hello {{userName}}</span>
+    <button type="button" (click)="logout()" tabindex="0"
+            class="btn btn-close btn-outline-secondary m-l-auto" aria-label="Close">
+          <span aria-hidden="true">logout</span>
+    </button>
+  </div>
+  <!-- router -->
+  <router-outlet></router-outlet>
+
+</div>
+
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * The content above * * * * * * * * * * * -->
+<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
+<!-- * * * * * * * * * * and can be replaced. * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- * * * * * * * * * * End of Placeholder * * * * * * * * * * * -->
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->

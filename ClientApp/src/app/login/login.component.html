@@ -1,0 +1,19 @@
+<!-- * * * * * * * * * *  Movies Component * * * * * * * * * * * -->
+
+<div class="text-center">
+    <form class="form-signin m-3">
+      <h3 class="h3 mb-3 font-weight-normal">Please sign in</h3>
+      <label for="inputUsername" >User name</label>
+      <input [(ngModel)]="username" [ngModelOptions]="{standalone: true}" name="inputUsername" type="text" class="form-control" placeholder="User name" />
+      <label for="inputPassword" >Password</label>
+      <input [(ngModel)]="password" [ngModelOptions]="{standalone: true}" name="inputPassword" type="password" class="form-control" placeholder="Password" />
+      
+      <button (click)="login()" class="btn btn-lg btn-primary btn-block" type="button">Sign in</button>
+      <p class="mt-5 mb-3 text-muted">© movies</p>
+    </form>
+  
+
+  </div>
+
+
+<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
