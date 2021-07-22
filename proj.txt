@@ -1,0 +1,23 @@
+﻿https://morioh.com/p/bf5be9232f5a?fbclid=IwAR0peFtJBzFAXOtZoVhB2cn-BPTqNLWp8ryy9EKBMDl8sZrHStT3eeMxjnU
+
+// lib, MongoDB, basic express, express-middleware, 
+
+mkdir notetaking-api
+cd notetaking-api
+npm init --yes
+npm install --save express cookie-parser nodemon mongoose express-session
+npm install --save manage-users passport passport-jwt
+
+[Express] is a fast and minimal web framework for Node.js.
+[mongoose](https://github.com/Automattic/mongoose/) is an object modeling (ODM) tool that we’ll use to connect to MongoDB.
+-
+
+/* 
+C for Create: HTTP POST
+R for Read: HTTP GET
+U for Update: HTTP PUT
+D for Delete: HTTP DELETE
+
+req.params.userId
+*/
+
