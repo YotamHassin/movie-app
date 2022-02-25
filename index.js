@@ -42,6 +42,8 @@ async function run() {
 
 	const axios = require('axios').default;
 
+	const path = require('path');
+
 	// 1)register 2)Autheticate 3)resetPassword
 	const username = {
 		_id: ObjectId("620709fc2006c10c1cab3d20"),
@@ -124,13 +126,51 @@ async function run() {
 		methods: { get: true }
 	};
 
+	//app.use('/interpolation/*', express.static(path.join(__dirname, 'build'), { index: 'index.html' }));
+	//app.use(express.static("public/ftp", {"index": ["default.html", "default.htm"]}))
+		// http://127.0.0.1:3000/getSingle?id=5
+		app.get('/getSingle1', async function (req, res) {
+			try {
+				//var id = req.param('id');
+				//var id = req.param.id; 
+				var query = req.query;
+	
+				console.log('getSingle', query);
+	
+				res.send({ query });
+			}
+			catch (err) {
+				res.send(err);
+			}
+	
+		});
+	
+	console.log('app.use static');
+	var options = {
+		dotfiles: 'ignore',
+		etag: false,
+		extensions: ['htm', 'html'],
+		index: false,
+		maxAge: '1d',
+		redirect: false,
+		setHeaders: function (res, path, stat) {
+			res.set('x-timestamp', Date.now())
+		}
+	}
+
+	//app.use(express.static('public', options))
+
+	// app.use(express.static("public/ftp", {"index": ["default.html", "default.htm"]}))
+	app.use('/tmp', express.static(__dirname + "/public/dist"));
+	app.use(express.static("public/dist"));
+
 	// Home url
 	// /user/:name => req.params.name
 	app.get("/", (req, res) => {
 		// api result
 		//res.json({message: "Notetaking API v1"});
-
-		res.redirect('/index.html');
+		res.sendFile(path.join(__dirname, 'ClientApp', 'dist', 'index.html'));
+		//res.redirect('/index.html');
 
 	});
 
@@ -152,7 +192,7 @@ async function run() {
 	}
 
 	// http://127.0.0.1:3000/getSingle?id=5
-	app.get('/interpolation', async function (req, res) {
+	app.get('/interpolation4/*', async function (req, res) {
 		try {
 			//modify the url in any way you want
 			var locationName = 'interpolation';
@@ -160,15 +200,15 @@ async function run() {
 			const newurl = 'http://127.0.0.1:3001/' + locationName;
 			//const newurl = '127.0.0.1:3001/'+locationName;
 
-			console.log('app.get interpolation', {locationName, newurl});
+			console.log('app.get interpolation', { locationName, newurl });
 
 			const toPipe = request.get(newurl);
 			if (toPipe) {
 				console.log('if toPipe');
 				//return toPipe.pipe(res);
 				const body = toPipe.body;
-				
-				
+
+
 				res.pipe(toPipe);
 			}
 
@@ -300,24 +340,6 @@ async function run() {
 
 	});
 
-
-	console.log('app.use static');
-	var options = {
-		dotfiles: 'ignore',
-		etag: false,
-		extensions: ['htm', 'html'],
-		index: false,
-		maxAge: '1d',
-		redirect: false,
-		setHeaders: function (res, path, stat) {
-			res.set('x-timestamp', Date.now())
-		}
-	}
-
-	//app.use(express.static('public', options))
-
-	// app.use(express.static("public/ftp", {"index": ["default.html", "default.htm"]}))
-	app.use(express.static("ClientApp/dist"));
 
 	// public/images/kitten.jpg
 	// http://localhost:3000/static/images/kitten.jpg
