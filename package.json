@@ -7,7 +7,6 @@
     "axios": "^0.25.0",
     "cookie-parser": "1.4.5",
     "express": "4.17.1",
-    "express-async-wrap": "^1.0.0",
     "express-session": "1.17.2",
     "jsonwebtoken": "8.5.1",
     "manage-users": "1.2.1",
@@ -23,8 +22,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index",
     "start": "node index",
-    "install": "npm install",
-    "install-s": "npm install --save axios"
+    "install-init": "npm install",
+    "install-dep": "npm install --save axios",
+    "un-install-dep": "npm uninstall --save express-async-wrap"
   },
   "keywords": [],
   "author": "",
