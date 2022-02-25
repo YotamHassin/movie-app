@@ -40,8 +40,6 @@ async function run() {
 
 	const userModule = require('mongoose-user-management');
 
-	const wrap = require('express-async-wrap');
-
 	const axios = require('axios').default;
 
 	// 1)register 2)Autheticate 3)resetPassword
