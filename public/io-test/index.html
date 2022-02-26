@@ -8,34 +8,58 @@
 
 	<script>
 
-
 		const chatMessageType = {
+			ChatMessage: 'chat message',
 			welcome: 'welcome',
 			join: 'join',
+			disconnect: 'disconnect',
+			message: 'message',
+			recieveUserName: 'recieveUserName',
+			callTest: 'callTest',
+
 		}
 
 		var socket = io();
 
+		var connectedUserId;
+
 		function ReadyAction(e) {
+			// arguments[0]==e
 			console.log('DOMContentLoaded', { e, socket, io });
 			var messages = document.getElementById('messages');
-			var form = document.getElementById('form');
-			var input = document.getElementById('input');
+			var messageForm = document.getElementById('message-form');
+			var messageInput = document.getElementById('message-input');
 
-			form.addEventListener('submit', function (e) {
-				console.log('form submit', { e, value: input.value });
+			messageForm.addEventListener('submit', function (e) {
+				console.log('form submit', { e, value: messageInput.value });
 				e.preventDefault();
-				if (input.value) {
-					socket.emit('chat message', input.value);
-					input.value = '';
+				if (messageInput.value) {
+					socket.emit(chatMessageType.ChatMessage, messageInput.value);
+					messageInput.value = '';
 				}
 			});
 
-			socket.on('chat message', function (msg = {id: '', type: chatMessageType.welcome}) {
-				console.log('chat message', { e, msg });
+			socket.on(chatMessageType.ChatMessage, function (msg = { id: '', type: chatMessageType.welcome }) {
+				console.log(chatMessageType.ChatMessage, msg);
 				var item = document.createElement('li');
 				if (msg.type == chatMessageType.welcome) {
 					//item.style.backgroundColor = 'blue';
+					connectedUserId = msg.id;
+				}
+				else if (connectedUserId && msg.id === connectedUserId && msg.type == chatMessageType.disconnect) {
+					socket.emit(chatMessageType.ChatMessage, 'bye');
+					alert('disconnect');
+				}
+				else if (msg.type == chatMessageType.callTest) {
+					//socket.emit(chatMessageType.ChatMessage, 'bye');
+					if (msg.require && msg.require.functionName) {
+						var toString = msg.require.functionName.toString;
+						var func = Function('return ' +toString);
+						var ret = func.call(msg.require);
+						msg.require.functionName = ret;
+						var ret2 = msg.require.functionName.call(msg.require, 'tesst 3');
+						console.log(`chatMessageType.callTest `, {toString, func, ret, ret2});
+					}
 				}
 				else {
 					//item.style.backgroundColor = 'green';
@@ -45,6 +69,14 @@
 				window.scrollTo(0, document.body.scrollHeight);
 			});
 
+			setTimeout(() => {
+				var userName = prompt('user name', '');
+				if (userName) {
+					console.log('userName', userName);
+					socket.emit(chatMessageType.callTest, userName);
+					socket.emit(chatMessageType.recieveUserName, userName);
+				}
+			}, 1200);
 		}
 
 		document.addEventListener('DOMContentLoaded', ReadyAction);
@@ -124,7 +156,7 @@
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 		}
 
-		#form {
+		#message-form {
 			background: rgba(0, 0, 0, 0.15);
 			padding: 0.25rem;
 			position: fixed;
@@ -137,7 +169,7 @@
 			backdrop-filter: blur(10px);
 		}
 
-		#input {
+		#message-input {
 			border: none;
 			padding: 0 1rem;
 			flex-grow: 1;
@@ -145,11 +177,11 @@
 			margin: 0.25rem;
 		}
 
-		#input:focus {
+		#message-input:focus {
 			outline: none;
 		}
 
-		#form>button {
+		#message-form>button {
 			background: #333;
 			border: none;
 			padding: 0 1rem;
@@ -177,9 +209,20 @@
 
 <body>
 	<ul id="messages"></ul>
-	<form id="form" action="">
-		<input id="input" autocomplete="off" /><button>Send</button>
+	<form id="message-form" action="">
+		<div id="output"></div>
+		<input id="message-input" autocomplete="off" /><button>Send</button>
 	</form>
+	<!-- Load Babel -->
+	<!-- v6 <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
+	<!-- <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script> -->
+	<script src="https://unpkg.com/@babel/standalone/babel.js"></script>
+	<!-- Your custom script here -->
+	<script type="text/babel">
+	const getMessage = () => "Hello World";
+	document.getElementById('output').innerHTML = getMessage();
+	</script>
+	
 </body>
 
 </html>
