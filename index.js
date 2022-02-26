@@ -171,6 +171,12 @@ async function run() {
 	});
 	app.use('/build', build);
 
+	var IOTest = express.static(__dirname + "/public/io-test",
+		{
+			maxAge: '1h', index: 'index.html', fallthrough: true, redirect: false
+		});
+	app.use('/io-test', IOTest);
+
 	app.use('/tmp', express.static(__dirname + "/public/dist"));
 
 	app.use(express.static("public/dist"));
