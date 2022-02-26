@@ -173,7 +173,7 @@ async function run() {
 
 	var IOTest = express.static(__dirname + "/public/io-test",
 		{
-			maxAge: '1h', index: 'index.html', fallthrough: true, redirect: false
+			maxAge: '1h', index: 'index.html', fallthrough: true
 		});
 	app.use('/io-test', IOTest);
 
@@ -412,42 +412,136 @@ in a browser to see the output`);
 
 	console.log('Init Socket IO');
 
-	const connectedUserMap = new Map();
+	const connectedUserMap = new Map([[Number.MAX_VALUE, { status: 'online', name: 'admin' }]]);
 
 	io.on('connection', (socket) => {
-		/* … */
-		console.log(`on user connected, connection socket`);
-		let connectedUserId = socket.id;
+		const connectedUserId = socket.id;
+		const connectedUser = () => {
+			let user = connectedUserMap.get(connectedUserId);
+			return user ? (user.name ? user.name : connectedUserId) : connectedUserId;
+		};
+
+		console.log(`user ${connectedUser()} connected, connection socket.`, socket.rooms);
 
 		//add property value when assigning user to map
-		connectedUserMap.set(socket.id, { status: 'online', name: 'none' });
+		connectedUserMap.set(connectedUserId, { status: 'online', name: '' });
 
-		socket.on('recieveUserName', function (data) {
-			//find user by there socket in the map the update name property of value
-			let user = connectedUserMap.get(connectedUserId);
-			user.name = data.name;
-		});
+		const leave = (room = "room 237", emitText = `user ${connectedUser()} has left the room`) => {
+			socket.leave(room);
+			io.to(room).emit(emitText);
+			console.log(emitText + `, room: ${room}`);
+		}
 
+		const join = (room = "room 237", emitText = `user ${connectedUser()} has joined the room`) => {
+			socket.join(room);
+			io.to(room).emit(emitText);
+			console.log(emitText + `, room: ${room}`);
+		}
+
+		/* Rooms */
+		//console.log('rooms', socket.rooms); // Set { <socket.id> }
+		//join("room1"); //leave
+		//console.log('join room1 rooms', socket.rooms); // Set { <socket.id>, "room1" }
 
 		const chatMessageType = {
+			ChatMessage: 'chat message',
 			welcome: 'welcome',
 			join: 'join',
+			disconnect: 'disconnect',
+			message: 'message',
+			recieveUserName: 'recieveUserName',
+			callTest: 'callTest',
+
 		}
-		
-		
-		//io.to(connectedUserId).emit('chat message', `you welcome: ${connectedUserId} to chat app`);
-		io.to(connectedUserId).emit('chat message',  {type: chatMessageType.welcome, id: connectedUserId });
-		//socket.broadcast.emit('chat message', `say welcome to: ${connectedUserId}`);
-		socket.broadcast.emit('chat message', {type: chatMessageType.join, id: connectedUserId });
 
-
-		socket.on('disconnect', () => {
-			console.log('user disconnected');
+		/* recieve User Name */
+		socket.on(chatMessageType.recieveUserName, function (name = '') {
+			socket.name = name
+			//find user by there socket in the map the update name property of value
+			let user = connectedUserMap.get(connectedUserId);
+			if (user) {
+				user.name = name;
+			}
+			io.emit('chat message', { type: chatMessageType.recieveUserName, id: connectedUserId, name }); // This will emit the event to all connected sockets
 		});
 
-		socket.on('chat message', (msg) => {
+		/* 
+typeof(() => {});
+'function'
+typeof({});
+'object'
+typeof(function (params) { });
+'function'
+typeof(typeof);
+VM165:1 Uncaught SyntaxError: Unexpected token ')'
+typeof(typeof);
+VM171:1 Uncaught SyntaxError: Unexpected token ')'
+typeof(this);
+'object'
+typeof([]);
+'object'
+ */
+		function mapToStr(obj = {}) {
+			console.log(`mapToStr`);
+			if (obj !== undefined) {
+				console.log(`mapToStr obj`, obj);
+				if (typeof (obj) === 'object' && obj.length && obj.length > 0) {
+					console.log(`typeof (obj) === 'arr'`);
+					for (let index = 0; index < obj.length; index++) {
+						obj[index] = mapToStr(obj[index]);
+					}
+				}
+				else if (typeof (obj) === 'object') {
+					console.log(`typeof (obj) === 'object'`);
+					for (const key in obj) {
+						const element = obj[key];
+						if (element) {
+							if (typeof (element) === 'function') {
+								var toString = element.toString();
+								obj[key] = { type: 'func', toString };
+							}
+						}
+					}
+				}
+
+				else {
+
+				}
+			}
+
+			return obj;
+		}
+
+		/* call Test */
+		socket.on(chatMessageType.callTest, function (name = '') {
+			//find user by there socket in the map the update name property of value
+			//var str = mapToStr(require('./initData'));
+			var str = require('./initData');
+			io.emit('chat message', {
+				type: chatMessageType.callTest, id: connectedUserId, name,
+				require: str
+			}); // This will emit the event to all connected sockets
+		});
+
+
+		/* welcome connectedUserId */
+		//io.to(connectedUserId).emit('chat message', `you welcome: ${connectedUserId} to chat app`);
+		io.to(connectedUserId).emit('chat message', { type: chatMessageType.welcome, id: connectedUserId });
+		
+		/* broadcast connectedUserId joined */
+		//socket.broadcast.emit('chat message', `say welcome to: ${connectedUserId}`);
+		socket.broadcast.emit('chat message', { type: chatMessageType.join, id: connectedUserId });
+
+		/* disconnect */
+		socket.on('disconnect', () => {
+			io.emit('chat message', { type: chatMessageType.disconnect, id: connectedUserId }); // This will emit the event to all connected sockets
+			console.log(`user ${connectedUserId} disconnected.`);
+		});
+
+		/* chat message */
+		socket.on('chat message', (msg = '') => {
 			console.log('message: ' + msg);
-			io.emit('chat message', msg);
+			io.emit('chat message', { type: chatMessageType.message, id: connectedUserId, msg });
 		});
 
 		// send an event to everyone
