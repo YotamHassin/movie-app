@@ -128,23 +128,23 @@ async function run() {
 
 	//app.use('/interpolation/*', express.static(path.join(__dirname, 'build'), { index: 'index.html' }));
 	//app.use(express.static("public/ftp", {"index": ["default.html", "default.htm"]}))
-		// http://127.0.0.1:3000/getSingle?id=5
-		app.get('/getSingle1', async function (req, res) {
-			try {
-				//var id = req.param('id');
-				//var id = req.param.id; 
-				var query = req.query;
-	
-				console.log('getSingle', query);
-	
-				res.send({ query });
-			}
-			catch (err) {
-				res.send(err);
-			}
-	
-		});
-	
+	// http://127.0.0.1:3000/getSingle?id=5
+	app.get('/getSingle1', async function (req, res) {
+		try {
+			//var id = req.param('id');
+			//var id = req.param.id; 
+			var query = req.query;
+
+			console.log('getSingle', query);
+
+			res.send({ query });
+		}
+		catch (err) {
+			res.send(err);
+		}
+
+	});
+
 	console.log('app.use static');
 	var options = {
 		dotfiles: 'ignore',
@@ -161,7 +161,18 @@ async function run() {
 	//app.use(express.static('public', options))
 
 	// app.use(express.static("public/ftp", {"index": ["default.html", "default.htm"]}))
+	var build = express.static(__dirname + "/public/build",
+		{
+			maxAge: '1h', index: 'index.html', fallthrough: true, redirect: false
+		});
+	app.use('/build', (req, res, arg1, arg2, arg3) => {
+		console.log('req, res, arg1, arg2, arg3');
+		return build(req, res, arg1, arg2, arg3);
+	});
+	app.use('/build', build);
+
 	app.use('/tmp', express.static(__dirname + "/public/dist"));
+
 	app.use(express.static("public/dist"));
 
 	// Home url
@@ -394,11 +405,52 @@ in a browser to see the output`);
 	//chat(io);
 
 	console.log('Init Socket IO');
+
+	const connectedUserMap = new Map();
+
 	io.on('connection', (socket) => {
 		/* … */
-		console.log(`on connection, socket`);
+		console.log(`on user connected, connection socket`);
+		let connectedUserId = socket.id;
 
-		io.sockets.emit('message', { type: 'new user' });
+		//add property value when assigning user to map
+		connectedUserMap.set(socket.id, { status: 'online', name: 'none' });
+
+		socket.on('recieveUserName', function (data) {
+			//find user by there socket in the map the update name property of value
+			let user = connectedUserMap.get(connectedUserId);
+			user.name = data.name;
+		});
+
+
+		const chatMessageType = {
+			welcome: 'welcome',
+			join: 'join',
+		}
+		
+		
+		//io.to(connectedUserId).emit('chat message', `you welcome: ${connectedUserId} to chat app`);
+		io.to(connectedUserId).emit('chat message',  {type: chatMessageType.welcome, id: connectedUserId });
+		//socket.broadcast.emit('chat message', `say welcome to: ${connectedUserId}`);
+		socket.broadcast.emit('chat message', {type: chatMessageType.join, id: connectedUserId });
+
+
+		socket.on('disconnect', () => {
+			console.log('user disconnected');
+		});
+
+		socket.on('chat message', (msg) => {
+			console.log('message: ' + msg);
+			io.emit('chat message', msg);
+		});
+
+		// send an event to everyone
+		//io.emit('some event', { someProperty: 'some value', otherProperty: 'other value' }); // This will emit the event to all connected sockets
+
+		// send a message to everyone except for a certain emitting socket
+		//socket.broadcast.emit('chat message', 'hi from user');
+
+		//io.sockets.emit('message', { type: 'new user' });
 
 
 		//socket.on('getMessages', () => this.getMessages());
