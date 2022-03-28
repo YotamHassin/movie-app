@@ -22,9 +22,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index",
     "start": "node index",
-    "install-init": "npm install",
-    "install-dep": "npm install --save axios",
-    "un-install-dep": "npm uninstall --save express-async-wrap"
+    "install": "npm install",
+    "install-s": "npm install --save axios"
   },
   "keywords": [],
   "author": "",
